@@ -26,18 +26,26 @@ public:
 	Tank() : pos( vec2( 0, 0 ) ), speed( vec2( 0, 0 ) ), target( vec2( 0, 0 ) ), reloading( 0 ) {};
 	~Tank();
 	void Fire( unsigned int party, vec2& pos, vec2& dir );
-	void Tick();
+	void Tick(int i);
 	vec2 pos, speed, target;
-	//SIMD versions
-	//__m128* pos4, *speed4, *target4, *force4;
-	union { __m128* pos4; float posF[4]; };
-	union { __m128* speed4; float speedF[4]; };
-	union { __m128* target4; float targetF[4]; };
-	union { __m128* force4; float forceF[4]; };
+	//union { __m128 *pos4; float posF[4]; };
+	//union { __m128 *speed4; float speedF[4]; };
+	//union { __m128 *target4; float targetF[4]; };
 	float maxspeed;
 	int flags, reloading;
 	i32vec2 gridcel;
 	Smoke smoke;
+};
+
+class TankQuad
+{
+public:
+	union { __m128 *posX4[(MAXP1 + MAXP2)/4]; float posXF[MAXP1 + MAXP2]; };
+	union { __m128 *posY4[(MAXP1 + MAXP2) / 4]; float posYF[MAXP1 + MAXP2]; };
+	union { __m128 *speedX4[(MAXP1 + MAXP2) / 4]; float speedXF[MAXP1 + MAXP2]; };
+	union { __m128 *speedY4[(MAXP1 + MAXP2) / 4]; float speedYF[MAXP1 + MAXP2]; };
+	union { __m128 *targetX4[(MAXP1 + MAXP2) / 4]; float targetXF[MAXP1 + MAXP2]; };
+	union { __m128 *targetY4[(MAXP1 + MAXP2) / 4]; float targetYF[MAXP1 + MAXP2]; };
 };
 
 class Bullet
