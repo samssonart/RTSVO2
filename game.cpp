@@ -81,8 +81,8 @@ void Tank::Tick(int tankIndex)
 	}
 	vec2 force = normalize( target - pos );
 
-	__m128 forceX4;
-	__m128 forceY4;
+	union { __m128 forceX4; float forceXF[4]; };
+	union { __m128 forceY4; float forceYF[4]; };
 
 	if (tankIndex % 4 == 0) {
 		forceX4 = _mm_sub_ps(*tquad->targetX4[quadIndex], *tquad->posX4[quadIndex]);
@@ -91,6 +91,54 @@ void Tank::Tick(int tankIndex)
 		forceY4 = _mm_sub_ps(*tquad->targetY4[quadIndex], *tquad->posY4[quadIndex]);
 		forceY4 = _mm_div_ps(forceY4, _mm_sqrt_ps(_mm_dp_ps(forceY4, forceY4, 0x77)));
 	}
+
+
+
+	// evade other tanks
+	//There's a problem here, we're evaluation collisions among tanks that may be on the other side of the screen 
+	for (int i = 0; i < ((MAXP1 + MAXP2) /4); i++ )
+	{
+		bool check = false;
+
+		for (int j = 0; j < 3; j++) {
+
+			if (tankIndex == j + (i * 4)) {
+				check = true;
+				break;
+			}
+
+			if ((game->m_Tank[j + (i * 4)]->gridcel != this->gridcel)) {
+				check = true;
+				break;
+			}
+		}
+		
+		if (check)
+			continue;
+
+		//vec2 d = pos - game->m_Tank[i]->pos;
+		__m128 dX4 = _mm_sub_ps(_mm_set_ps1(tquad->posXF[tankIndex]), *tquad->posX4[i]);
+		__m128 dY4 = _mm_sub_ps(_mm_set_ps1(tquad->posYF[tankIndex]), *tquad->posY4[i]);
+
+		float length4 = _mm_cvtss_f32(_mm_sqrt_ss(_mm_dp_ps(_mm_add_ps(dX4, dY4), _mm_add_ps(dX4, dY4), 0x71)));
+
+		__m128 dX4Norm = _mm_mul_ps(dX4, _mm_rsqrt_ps(_mm_dp_ps(dX4, dX4, 0x77)));
+		__m128 dY4Norm = _mm_mul_ps(dY4, _mm_rsqrt_ps(_mm_dp_ps(dY4, dY4, 0x51)));
+
+		if (length4 < 16) {
+			//force += normalize(d) * 2.0f;
+			forceX4 = _mm_add_ps(forceX4, _mm_mul_ps(dX4Norm, _mm_set_ps1(2.0f)));
+			forceY4 = _mm_add_ps(forceY4, _mm_mul_ps(dY4Norm, _mm_set_ps1(2.0f)));
+		}
+		else if (length4 < 32) {
+			/*force += normalize(d) * 0.4f;*/
+			forceX4 = _mm_add_ps(forceX4, _mm_mul_ps(dX4Norm, _mm_set_ps1(0.4f)));
+			forceY4 = _mm_add_ps(forceY4, _mm_mul_ps(dY4Norm, _mm_set_ps1(0.4f)));
+		}
+
+	}
+
+	force = force + vec2(forceXF[tankIndex % 4], forceYF[tankIndex % 4]);
 
 	// evade mountain peaks
 	for ( unsigned int i = 0; i < 16; i++ )
@@ -109,18 +157,7 @@ void Tank::Tick(int tankIndex)
 			}
 		}
 	}
-	// evade other tanks
-	//There's a problem here, we're evaluation collisions among tanks that may be on the other side of the screen 
-	for ( unsigned int i = 0; i < (MAXP1 + MAXP2); i++ )
-	{
-		if ((game->m_Tank[i] == this) || (game->m_Tank[i]->gridcel != this->gridcel)) 
-			continue;
-		vec2 d = pos - game->m_Tank[i]->pos;
-		if (length(d) < 8) 
-			force += normalize(d) * 2.0f;
-		else if (length(d) < 16) 
-			force += normalize(d) * 0.4f;
-	}
+
 	// evade user dragged line
 	if ((flags & P1) && (game->m_LButton))
 	{
