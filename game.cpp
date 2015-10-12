@@ -99,17 +99,48 @@ void Tank::Tick()
 			}
 		}
 	}
+
+	//__m128 posX4 =_mm_set_ps1(pos.x);
+	//__m128 posY4 = _mm_set_ps1(pos.y);
+
+	//union { __m128 length4[(MAXP1 + MAXP2) / 4]; float length4f[(MAXP1 + MAXP2)]; };
+	//union { __m128 normalizeX4[(MAXP1 + MAXP2) / 4]; float normalizeX4f[(MAXP1 + MAXP2)]; };
+	//union { __m128 normalizeY4[(MAXP1 + MAXP2) / 4]; float normalizeY4f[(MAXP1 + MAXP2)]; };
+
+	//for (unsigned int i = 0; i < (MAXP1 + MAXP2) / 4; i++) {
+
+	//	__m128 tempX4 = _mm_set_ps(game->m_Tank[0 + i * 4]->pos.x, game->m_Tank[1 + i * 4]->pos.x, game->m_Tank[2 + i * 4]->pos.x, game->m_Tank[3 + i * 4]->pos.x);
+	//	__m128 tempY4 = _mm_set_ps(game->m_Tank[0 + i * 4]->pos.y, game->m_Tank[1 + i * 4]->pos.y, game->m_Tank[2 + i * 4]->pos.y, game->m_Tank[3 + i * 4]->pos.y);
+
+	//	__m128 dX4 = _mm_sub_ps(posX4, tempX4);
+	//	__m128 dY4 = _mm_sub_ps(posY4, tempY4);
+
+	//	length4[i] = _mm_sqrt_ps(_mm_add_ps(_mm_mul_ps(dX4, dX4), _mm_mul_ps(dY4, dY4)));
+	//	normalizeX4[i] = _mm_div_ps(dX4, length4[i]);
+	//	normalizeY4[i] = _mm_div_ps(dY4, length4[i]);
+	//}
+
+
 	// evade other tanks
 	if (shotsFired) {//If they have started attacking each other we know the armies are close
+
 		for (unsigned int i = 0; i < (MAXP1 + MAXP2); i++)
 		{
 			if ((game->m_Tank[i] == this)) continue;
+
+			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
+
 			if (((game->m_Tank[i]->pos.x) < 0.0f || (game->m_Tank[i]->pos.x) > SCRWIDTH) || ((game->m_Tank[i]->pos.y) < 0.0f || (game->m_Tank[i]->pos.x) > SCRHEIGHT))
 				continue;//tank offscreen, we don't care about collisions 
-			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+			if (distX < 6 && distY < 6) {
 				vec2 d = pos - game->m_Tank[i]->pos;
-				if (length(d) < 8) force += normalize(d) * 2.0f;
-				else if (length(d) < 16) force += normalize(d) * 0.4f;
+				/*float l = length(d);*/
+				float l = (d.x*d.x + d.y*d.y);
+				if (l < 64)
+					force += normalize(d) * 2.0f;
+				else if (l < 256)
+					force += normalize(d) * 0.4f;
 			}
 		}
 	}
@@ -118,19 +149,35 @@ void Tank::Tick()
 		for (unsigned int i = 0; i < MAXP1; i++)
 		{
 			if ((game->m_Tank[i] == this)) continue;
-			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+
+			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
+
+			if (distX < 6 && distY < 6 ) {
 				vec2 d = pos - game->m_Tank[i]->pos;
-				if (length(d) < 8) force += normalize(d) * 2.0f;
-				else if (length(d) < 16) force += normalize(d) * 0.4f;
+				/*float l = length(d);*/
+				float l = (d.x*d.x + d.y*d.y);
+				if (l < 64)
+					force += normalize(d) * 2.0f;
+				else if (l < 256)
+					force += normalize(d) * 0.4f;
 			}
 		}
 		for (unsigned int i = MAXP1; i < MAXP2; i++)
 		{
 			if ((game->m_Tank[i] == this)) continue;
-			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+
+			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
+
+			if (distX < 6 && distY < 6) {
 				vec2 d = pos - game->m_Tank[i]->pos;
-				if (length(d) < 8) force += normalize(d) * 2.0f;
-				else if (length(d) < 16) force += normalize(d) * 0.4f;
+				/*float l = length(d);*/
+				float l = (d.x*d.x + d.y*d.y);
+				if (l < 64) 
+					force += normalize(d) * 2.0f;
+				else if (l < 256) 
+					force += normalize(d) * 0.4f;
 			}
 		}
 	}
@@ -149,33 +196,35 @@ void Tank::Tick()
 	if (--reloading >= 0) return;
 	unsigned int start = 0, end = MAXP1;
 	if (flags & P1) start = MAXP1, end = MAXP1 + MAXP2;
-	for ( unsigned int i = start; i < end; i++ ) if ((game->m_Tank[i]->flags & ACTIVE) && game->m_Tank[i]->gridcel[0] != gridcel[0] && game->m_Tank[i]->gridcel[1] != gridcel[1])
-	{
-		if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 100 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 100) {
-			vec2 d = game->m_Tank[i]->pos - pos;
-			if ((length(d) < 100))
-				if ((dot(normalize(d), speed) > 0.99999f))
-				{
-					Fire(flags & (P1 | P2), pos, speed); // shoot
-					shotsFired = true;
-					reloading = 200; // and wait before next shot is ready
-					break;
+	for ( unsigned int i = start; i < end; i++ ) 
+		if ((game->m_Tank[i]->flags & ACTIVE)) {
+			if (game->m_Tank[i]->gridcel[0] != gridcel[0] && game->m_Tank[i]->gridcel[1] != gridcel[1]) {
+				if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 100 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 100) {
+					vec2 d = game->m_Tank[i]->pos - pos;
+					float l = (d.x*d.x + d.y*d.y);
+					if ((l < 10000))
+						if ((dot(normalize(d), speed) > 0.99999f))
+						{
+							Fire(flags & (P1 | P2), pos, speed); // shoot
+							shotsFired = true;
+							reloading = 200; // and wait before next shot is ready
+							break;
+						}
 				}
-		}
+			}
 	}
 }
 
 // Game::Init - Load data, setup playfield
 void Game::Init()
 {
-	//Create a quadtree that encompasses the entire screen
 	m_Heights = new Surface( "testdata/heightmap.png" ), m_Backdrop = new Surface( 1024, 768 ), m_Grid = new Surface( 1024, 768 );
 	Pixel* a1 = m_Grid->GetBuffer(), *a2 = m_Backdrop->GetBuffer(), *a3 = m_Heights->GetBuffer();
 	for ( int y = 0; y < 768; y++ ) for ( int idx = y * 1024, x = 0; x < 1024; x++, idx++ ) a1[idx] = (((x & 31) == 0) | ((y & 31) == 0)) ? 0x6600 : 0;
 	for ( int y = 0; y < 767; y++ ) for ( int idx = y * 1024, x = 0; x < 1023; x++, idx++ ) 
 	{
 		vec3 N = normalize( vec3( (float)(a3[idx + 1] & 255) - (a3[idx] & 255), 1.5f, (float)(a3[idx + 1024] & 255) - (a3[idx] & 255) ) ), L( 1, 4, 2.5f );
-		float h = (float)(a3[x + y * 1024] & 255) * 0.0005f, dx = x - 512.f, dy = y - 384.f, d = sqrtf( dx * dx + dy * dy ), dt = dot( N, normalize( L ) );
+		float h = (float)(a3[x + y * 1024] & 255) * 0.0005f, dx = x - 512.f, dy = y - 384.f, dt = dot( N, normalize( L ) );
 		int u = max( 0, min( 1023, (int)(x - dx * h) ) ), v = max( 0, min( 767, (int)(y - dy * h) ) ), r = (int)Rand( 255 );
 		a2[idx] = AddBlend( a1[u + v * 1024], ScaleColor( ScaleColor( 0x33aa11, r ) + ScaleColor( 0xffff00, (255 - r) ), (int)(max( 0.0f, dt ) * 80.0f) + 10 ) );
 	}

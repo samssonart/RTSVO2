@@ -3,10 +3,10 @@
 
 namespace Tmpl8 {
 
-#define MAXP1		 1000			// increase to test your optimized code
+#define MAXP1		 1000		// increase to test your optimized code
 #define MAXP2		 (4 * MAXP1)	// because the player is smarter than the AI
 #define MAXBULLET	2000
-#define GRIDSIZE 64
+#define GRIDSIZE 32
 
 class Smoke
 {

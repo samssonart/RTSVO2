@@ -1,17 +1,17 @@
-﻿Build started 10/12/2015 2:56:09 PM.
-     1>Project "D:\Projects\GMT\INFOMOV\RTS\tmpl85.00a_2015.vcxproj" on node 2 (Build target(s)).
+﻿Build started 10/12/2015 8:32:20 PM.
+     1>Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Ilib /Ilib\OpenGL /I"lib\SDL2-2.0.3\include" /Ilib\freeimage\inc /Zi /nologo /W3 /WX- /Ox /Ob2 /Oi /Ot /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _CRT_SECURE_NO_DEPRECATE /Gm- /EHsc /MD /GS- /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt game.cpp
          game.cpp
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Projects\GMT\INFOMOV\RTS\Template.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"lib\SDL2-2.0.3\lib\x86" /LIBPATH:lib\OpenGL /LIBPATH:lib\freeimage\lib32 winmm.lib advapi32.lib user32.lib sdl2.lib sdl2main.lib opengl32.lib freeimage.lib /NODEFAULTLIB:LIBCMT /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"D:\Projects\GMT\INFOMOV\RTS\Template.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE:NO /IMPLIB:"D:\Projects\GMT\INFOMOV\RTS\Template.lib" /MACHINE:X86 /SAFESEH Release\counters.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Programare\RTSVO2\Template.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"lib\SDL2-2.0.3\lib\x86" /LIBPATH:lib\OpenGL /LIBPATH:lib\freeimage\lib32 winmm.lib advapi32.lib user32.lib sdl2.lib sdl2main.lib opengl32.lib freeimage.lib /NODEFAULTLIB:LIBCMT /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"D:\Programare\RTSVO2\Template.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE:NO /IMPLIB:"D:\Programare\RTSVO2\Template.lib" /MACHINE:X86 /SAFESEH Release\counters.obj
          Release\game.obj
          Release\surface.obj
          Release\template.obj
          Release\threads.obj
-         tmpl85.00a_2015.vcxproj -> D:\Projects\GMT\INFOMOV\RTS\Template.exe
-     1>Done Building Project "D:\Projects\GMT\INFOMOV\RTS\tmpl85.00a_2015.vcxproj" (Build target(s)).
+         tmpl85.00a_2015.vcxproj -> D:\Programare\RTSVO2\Template.exe
+     1>Done Building Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.18
+Time Elapsed 00:00:00.80
