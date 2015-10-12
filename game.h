@@ -1,6 +1,10 @@
 #ifndef I_GAME_H
 #define I_GAME_H
 
+#include <map>
+#include <list>
+#include <unordered_map>
+
 namespace Tmpl8 {
 
 #define MAXP1		 1000		// increase to test your optimized code
@@ -30,8 +34,24 @@ public:
 	vec2 pos, speed, target;
 	float maxspeed;
 	int flags, reloading;
+	float radius;
 	int gridcel[2];
 	Smoke smoke;
+};
+
+class SpatialHash
+{
+	int Col;
+	int Row;
+public:
+	unordered_map<int, vector<int*>> buckets;
+
+	void Setup(int sceneWidth, int sceneHeight, int cellSize);
+	void ClearBuckets();
+	void RegisterTank(int tankIndex);
+	vector<int*> GetIdForTank(int tankIndex);
+	void AddToBucket(vec2 vec, vector<int> * bucketToAddTo);
+	vector<int*> GetNearby(int tankIndex);
 };
 
 class Bullet

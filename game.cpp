@@ -360,3 +360,49 @@ void Game::Tick( float a_DT )
 	sprintf( buffer, "nice, you win! blue left: %i", aliveP1 );
 	m_Surface->Print( buffer, 200, 370, 0xffff00 );
 }
+
+void SpatialHash::Setup(int sceneWidth, int sceneHeight, int cellSize)
+{
+	int col = sceneWidth / cellSize;
+	int row = sceneHeight / cellSize;
+
+	for (int i = 0; i < col*row; i++) {
+		buckets.emplace(i, new vector<int*>());
+	}
+
+	Col = col;
+	Row = row;
+}
+
+void SpatialHash::ClearBuckets()
+{
+	buckets.clear();
+
+	for (int i = 0; i < Col*Row; i++) {
+		buckets.emplace(i, new vector<int*>());
+	}
+}
+
+void SpatialHash::RegisterTank(int tankIndex)
+{
+	vector<int*> list = GetIdForTank(tankIndex);
+
+	for (auto & item : list)
+	{
+		buckets.at(*item).push_back(tankIndex);
+	}
+}
+
+vector<int*> SpatialHash::GetIdForTank(int tankIndex)
+{
+	return vector<int*>();
+}
+
+void SpatialHash::AddToBucket(vec2 vec, vector<int>* bucketToAddTo)
+{
+}
+
+vector<int*> SpatialHash::GetNearby(int tankIndex)
+{
+	return vector<int*>();
+}

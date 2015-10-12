@@ -1,17 +1,133 @@
-﻿Build started 10/12/2015 8:32:20 PM.
-     1>Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" on node 2 (Build target(s)).
+﻿Build started 10/12/2015 11:56:06 PM.
+     1>Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" on node 2 (Rebuild target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Ilib /Ilib\OpenGL /I"lib\SDL2-2.0.3\include" /Ilib\freeimage\inc /Zi /nologo /W3 /WX- /Ox /Ob2 /Oi /Ot /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _CRT_SECURE_NO_DEPRECATE /Gm- /EHsc /MD /GS- /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt game.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Ilib /Ilib\OpenGL /I"lib\SDL2-2.0.3\include" /Ilib\freeimage\inc /Zi /nologo /W3 /WX- /Ox /Ob2 /Oi /Ot /Oy- /D WIN32 /D NDEBUG /D _WINDOWS /D _CRT_SECURE_NO_DEPRECATE /Gm- /EHsc /MD /GS- /arch:SSE2 /fp:fast /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt counters.cpp game.cpp surface.cpp template.cpp threads.cpp
+         counters.cpp
          game.cpp
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Programare\RTSVO2\Template.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"lib\SDL2-2.0.3\lib\x86" /LIBPATH:lib\OpenGL /LIBPATH:lib\freeimage\lib32 winmm.lib advapi32.lib user32.lib sdl2.lib sdl2main.lib opengl32.lib freeimage.lib /NODEFAULTLIB:LIBCMT /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"D:\Programare\RTSVO2\Template.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE:NO /IMPLIB:"D:\Programare\RTSVO2\Template.lib" /MACHINE:X86 /SAFESEH Release\counters.obj
-         Release\game.obj
-         Release\surface.obj
-         Release\template.obj
-         Release\threads.obj
-         tmpl85.00a_2015.vcxproj -> D:\Programare\RTSVO2\Template.exe
-     1>Done Building Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" (Build target(s)).
+     1>C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(657): error C2664: 'std::pair<const _Kty,_Ty>::pair(std::pair<const _Kty,_Ty> &&)': cannot convert argument 2 from 'std::vector<int *,std::allocator<_Ty>> ' to 'const std::vector<int *,std::allocator<_Ty>> &'
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>
+                 ]
+                 and
+                 [
+                     _Ty=int *
+                 ]
+                 and
+                 [
+                     _Ty=int *
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(657): note: Reason: cannot convert from 'std::vector<int *,std::allocator<_Ty>> ' to 'const std::vector<int *,std::allocator<_Ty>>'
+                 with
+                 [
+                     _Ty=int *
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(657): note: No constructor could take the source type, or constructor overload resolution was ambiguous
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(775): note: see reference to function template instantiation 'void std::allocator<_Other>::construct<_Objty,int&,_Ty>(_Objty *,int &,_Ty &&)' being compiled
+                 with
+                 [
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Objty=std::pair<const int,std::vector<int *,std::allocator<int *>>>,
+                     _Ty=std::vector<int *,std::allocator<int *>> *
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(775): note: see reference to function template instantiation 'void std::allocator<_Other>::construct<_Objty,int&,_Ty>(_Objty *,int &,_Ty &&)' being compiled
+                 with
+                 [
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Objty=std::pair<const int,std::vector<int *,std::allocator<int *>>>,
+                     _Ty=std::vector<int *,std::allocator<int *>> *
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(920): note: see reference to function template instantiation 'void std::allocator_traits<_Alloc>::construct<_Ty,int&,std::vector<int *,std::allocator<int>>>(std::allocator<_Other> &,_Objty *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Alloc=std::allocator<std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>>,
+                     _Ty=std::pair<const int,std::vector<int *,std::allocator<int *>>>,
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Objty=std::pair<const int,std::vector<int *,std::allocator<int *>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(920): note: see reference to function template instantiation 'void std::allocator_traits<_Alloc>::construct<_Ty,int&,std::vector<int *,std::allocator<int>>>(std::allocator<_Other> &,_Objty *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Alloc=std::allocator<std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>>,
+                     _Ty=std::pair<const int,std::vector<int *,std::allocator<int *>>>,
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Objty=std::pair<const int,std::vector<int *,std::allocator<int *>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(834): note: see reference to function template instantiation 'void std::_Wrap_alloc<std::allocator<_Other>>::construct<_Ty,int&,std::vector<int *,std::allocator<int>>>(_Ty *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Ty=std::pair<const int,std::vector<int *,std::allocator<int *>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(834): note: see reference to function template instantiation 'void std::_Wrap_alloc<std::allocator<_Other>>::construct<_Ty,int&,std::vector<int *,std::allocator<int>>>(_Ty *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Other=std::_List_node<std::pair<const int,std::vector<int *,std::allocator<int *>>>,void *>,
+                     _Ty=std::pair<const int,std::vector<int *,std::allocator<int *>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(1062): note: see reference to function template instantiation 'std::_List_node<std::pair<const _Kty,_Ty>,void *> *std::_List_buy<std::pair<const _Kty,_Ty>,_Alloc>::_Buynode<int&,std::vector<int *,std::allocator<int>>>(std::_List_node<std::pair<const _Kty,_Ty>,void *> *,std::_List_node<std::pair<const _Kty,_Ty>,void *> *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>,
+                     _Alloc=std::allocator<std::pair<const int,std::vector<int *,std::allocator<int *>>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(1062): note: see reference to function template instantiation 'std::_List_node<std::pair<const _Kty,_Ty>,void *> *std::_List_buy<std::pair<const _Kty,_Ty>,_Alloc>::_Buynode<int&,std::vector<int *,std::allocator<int>>>(std::_List_node<std::pair<const _Kty,_Ty>,void *> *,std::_List_node<std::pair<const _Kty,_Ty>,void *> *,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>,
+                     _Alloc=std::allocator<std::pair<const int,std::vector<int *,std::allocator<int *>>>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(1034): note: see reference to function template instantiation 'void std::list<std::pair<const _Kty,_Ty>,std::allocator<std::pair<const _Kty,_Ty>>>::_Insert<int&,std::vector<int *,std::allocator<int>>>(std::_List_unchecked_const_iterator<std::_List_val<std::_List_simple_types<std::pair<const _Kty,_Ty>>>,std::_Iterator_base0>,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\list(1034): note: see reference to function template instantiation 'void std::list<std::pair<const _Kty,_Ty>,std::allocator<std::pair<const _Kty,_Ty>>>::_Insert<int&,std::vector<int *,std::allocator<int>>>(std::_List_unchecked_const_iterator<std::_List_val<std::_List_simple_types<std::pair<const _Kty,_Ty>>>,std::_Iterator_base0>,int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xhash(270): note: see reference to function template instantiation 'void std::list<std::pair<const _Kty,_Ty>,std::allocator<std::pair<const _Kty,_Ty>>>::emplace_front<int&,std::vector<int *,std::allocator<int>>>(int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>
+                 ]
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xhash(270): note: see reference to function template instantiation 'void std::list<std::pair<const _Kty,_Ty>,std::allocator<std::pair<const _Kty,_Ty>>>::emplace_front<int&,std::vector<int *,std::allocator<int>>>(int &,std::vector<int *,std::allocator<int>> &&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>
+                 ]
+         game.cpp(370): note: see reference to function template instantiation 'std::pair<std::_List_iterator<std::_List_val<std::_List_simple_types<std::pair<const _Kty,_Ty>>>>,bool> std::_Hash<std::_Umap_traits<_Kty,_Ty,std::_Uhash_compare<_Kty,_Hasher,_Keyeq>,_Alloc,false>>::emplace<int&,std::vector<int *,std::allocator<int>>*>(int &,std::vector<int *,std::allocator<int>> *&&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>,
+                     _Hasher=std::hash<int>,
+                     _Keyeq=std::equal_to<int>,
+                     _Alloc=std::allocator<std::pair<const int,std::vector<int *,std::allocator<int *>>>>
+                 ]
+         game.cpp(370): note: see reference to function template instantiation 'std::pair<std::_List_iterator<std::_List_val<std::_List_simple_types<std::pair<const _Kty,_Ty>>>>,bool> std::_Hash<std::_Umap_traits<_Kty,_Ty,std::_Uhash_compare<_Kty,_Hasher,_Keyeq>,_Alloc,false>>::emplace<int&,std::vector<int *,std::allocator<int>>*>(int &,std::vector<int *,std::allocator<int>> *&&)' being compiled
+                 with
+                 [
+                     _Kty=int,
+                     _Ty=std::vector<int *,std::allocator<int *>>,
+                     _Hasher=std::hash<int>,
+                     _Keyeq=std::equal_to<int>,
+                     _Alloc=std::allocator<std::pair<const int,std::vector<int *,std::allocator<int *>>>>
+                 ]
+         surface.cpp
+         template.cpp
+         threads.cpp
+         Generating Code...
+     1>Done Building Project "D:\Programare\RTSVO2\tmpl85.00a_2015.vcxproj" (Rebuild target(s)) -- FAILED.
 
-Build succeeded.
+Build FAILED.
 
-Time Elapsed 00:00:00.80
+Time Elapsed 00:00:02.61
