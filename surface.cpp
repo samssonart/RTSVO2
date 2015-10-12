@@ -185,7 +185,7 @@ void Surface::Plot( int x, int y, Pixel c )
 	if ((x >= 0) && (y >= 0) && (x < m_Width) && (y < m_Height)) m_Buffer[x + y * m_Pitch] = c;
 }
 
-void Surface::AddPlot( int x, int y, Pixel c )
+void Surface::AddPlot( int x, int y, Pixel c )//let's check this
 { 
 	if ((x >= 0) && (y >= 0) && (x < m_Width) && (y < m_Height)) m_Buffer[x + y * m_Pitch] = AddBlend( c, m_Buffer[x + y * m_Pitch] );
 }

@@ -1,12 +1,17 @@
 #include "precomp.h"
+#include <thread>
 
 // global data (source scope)
 static Game* game;
 
 //Grid to improve collision detection
-std::vector<int> grid[SCRHEIGHT / GRIDSIZE][SCRWIDTH / GRIDSIZE];
+// allocate grid
+int grid[SCRHEIGHT / GRIDSIZE][SCRWIDTH / GRIDSIZE][5000];
+// allocate array for storing grid cell ball count
+int nr[SCRHEIGHT / GRIDSIZE][SCRWIDTH / GRIDSIZE];
 
 
+bool shotsFired = false;
 // mountain peaks (push player away)
 static float peakx[16] = { 248, 537, 695, 867, 887, 213, 376, 480, 683, 984, 364, 77,  85, 522, 414, 856 };
 static float peaky[16] = { 199, 223, 83, 374,  694, 639, 469, 368, 545, 145,  63, 41, 392, 285, 447, 352 };
@@ -20,7 +25,6 @@ static float r = 2, fps = 0;
 static timer fpstimer;
 static int delay = 1;
 
-TankQuad* tquad = new TankQuad();
 
 // smoke particle effect tick function
 void Smoke::Tick()
@@ -70,76 +74,14 @@ void Tank::Fire( unsigned int party, vec2& pos, vec2& dir )
 }
 
 // Tank::Tick - update single tank
-void Tank::Tick(int tankIndex)
+void Tank::Tick()
 {
-	int quadIndex = (int) (tankIndex / 4);
-
 	if (!(flags & ACTIVE)) // dead tank
 	{
 		smoke.xpos = (int)pos.x, smoke.ypos = (int)pos.y;
 		return smoke.Tick();
 	}
 	vec2 force = normalize( target - pos );
-
-	union { __m128 forceX4; float forceXF[4]; };
-	union { __m128 forceY4; float forceYF[4]; };
-
-	if (tankIndex % 4 == 0) {
-		forceX4 = _mm_sub_ps(*tquad->targetX4[quadIndex], *tquad->posX4[quadIndex]);
-		forceX4 = _mm_div_ps(forceX4, _mm_sqrt_ps(_mm_dp_ps(forceX4, forceX4, 0x77)));
-
-		forceY4 = _mm_sub_ps(*tquad->targetY4[quadIndex], *tquad->posY4[quadIndex]);
-		forceY4 = _mm_div_ps(forceY4, _mm_sqrt_ps(_mm_dp_ps(forceY4, forceY4, 0x77)));
-	}
-
-
-
-	// evade other tanks
-	//There's a problem here, we're evaluation collisions among tanks that may be on the other side of the screen 
-	for (int i = 0; i < ((MAXP1 + MAXP2) /4); i++ )
-	{
-		bool check = false;
-
-		for (int j = 0; j < 3; j++) {
-
-			if (tankIndex == j + (i * 4)) {
-				check = true;
-				break;
-			}
-
-			if ((game->m_Tank[j + (i * 4)]->gridcel != this->gridcel)) {
-				check = true;
-				break;
-			}
-		}
-		
-		if (check)
-			continue;
-
-		//vec2 d = pos - game->m_Tank[i]->pos;
-		__m128 dX4 = _mm_sub_ps(_mm_set_ps1(tquad->posXF[tankIndex]), *tquad->posX4[i]);
-		__m128 dY4 = _mm_sub_ps(_mm_set_ps1(tquad->posYF[tankIndex]), *tquad->posY4[i]);
-
-		float length4 = _mm_cvtss_f32(_mm_sqrt_ss(_mm_dp_ps(_mm_add_ps(dX4, dY4), _mm_add_ps(dX4, dY4), 0x71)));
-
-		__m128 dX4Norm = _mm_mul_ps(dX4, _mm_rsqrt_ps(_mm_dp_ps(dX4, dX4, 0x77)));
-		__m128 dY4Norm = _mm_mul_ps(dY4, _mm_rsqrt_ps(_mm_dp_ps(dY4, dY4, 0x51)));
-
-		if (length4 < 16) {
-			//force += normalize(d) * 2.0f;
-			forceX4 = _mm_add_ps(forceX4, _mm_mul_ps(dX4Norm, _mm_set_ps1(2.0f)));
-			forceY4 = _mm_add_ps(forceY4, _mm_mul_ps(dY4Norm, _mm_set_ps1(2.0f)));
-		}
-		else if (length4 < 32) {
-			/*force += normalize(d) * 0.4f;*/
-			forceX4 = _mm_add_ps(forceX4, _mm_mul_ps(dX4Norm, _mm_set_ps1(0.4f)));
-			forceY4 = _mm_add_ps(forceY4, _mm_mul_ps(dY4Norm, _mm_set_ps1(0.4f)));
-		}
-
-	}
-
-	force = force + vec2(forceXF[tankIndex % 4], forceYF[tankIndex % 4]);
-
 	// evade mountain peaks
 	for ( unsigned int i = 0; i < 16; i++ )
 	{
@@ -149,15 +91,49 @@ void Tank::Tick(int tankIndex)
 		{
 			force += d * 0.03f * (peakh[i] / sd);
 			float r = sqrtf( sd );
-			for( int j = 0; j < 720; j++ )
+			for( int j = 0; j < 360; j++ )
 			{
-				float x = peakx[i] + r * sinf( (float)j * PI / 360.0f );
-				float y = peaky[i] + r * cosf( (float)j * PI / 360.0f );
-				game->m_Surface->AddPlot( (int)x, (int)y, 0x000500 );
+				float x = peakx[i] + r * sinf( 2.0f*(float)j * PI / 360.0f );
+				float y = peaky[i] + r * cosf(2.0f*(float)j * PI / 360.0f );
+				game->m_Surface->AddPlot( (int)x, (int)y, 0x000900 );
 			}
 		}
 	}
-
+	// evade other tanks
+	if (shotsFired) {//If they have started attacking each other we know the armies are close
+		for (unsigned int i = 0; i < (MAXP1 + MAXP2); i++)
+		{
+			if ((game->m_Tank[i] == this)) continue;
+			if (((game->m_Tank[i]->pos.x) < 0.0f || (game->m_Tank[i]->pos.x) > SCRWIDTH) || ((game->m_Tank[i]->pos.y) < 0.0f || (game->m_Tank[i]->pos.x) > SCRHEIGHT))
+				continue;//tank offscreen, we don't care about collisions 
+			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+				vec2 d = pos - game->m_Tank[i]->pos;
+				if (length(d) < 8) force += normalize(d) * 2.0f;
+				else if (length(d) < 16) force += normalize(d) * 0.4f;
+			}
+		}
+	}
+	else//If they haven't started attacking we know the red and blue tanks are far from each other, so just check collisions within armies
+	{
+		for (unsigned int i = 0; i < MAXP1; i++)
+		{
+			if ((game->m_Tank[i] == this)) continue;
+			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+				vec2 d = pos - game->m_Tank[i]->pos;
+				if (length(d) < 8) force += normalize(d) * 2.0f;
+				else if (length(d) < 16) force += normalize(d) * 0.4f;
+			}
+		}
+		for (unsigned int i = MAXP1; i < MAXP2; i++)
+		{
+			if ((game->m_Tank[i] == this)) continue;
+			if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 6 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 6) {
+				vec2 d = pos - game->m_Tank[i]->pos;
+				if (length(d) < 8) force += normalize(d) * 2.0f;
+				else if (length(d) < 16) force += normalize(d) * 0.4f;
+			}
+		}
+	}
 	// evade user dragged line
 	if ((flags & P1) && (game->m_LButton))
 	{
@@ -173,15 +149,18 @@ void Tank::Tick(int tankIndex)
 	if (--reloading >= 0) return;
 	unsigned int start = 0, end = MAXP1;
 	if (flags & P1) start = MAXP1, end = MAXP1 + MAXP2;
-	for ( unsigned int i = start; i < end; i++ ) if (game->m_Tank[i]->flags & ACTIVE)
+	for ( unsigned int i = start; i < end; i++ ) if ((game->m_Tank[i]->flags & ACTIVE) && game->m_Tank[i]->gridcel[0] != gridcel[0] && game->m_Tank[i]->gridcel[1] != gridcel[1])
 	{
-		vec2 d = game->m_Tank[i]->pos - pos;
-		if (length( d ) < 100){
-			if (dot(normalize(d), speed) > 0.99999f) {
-				Fire(flags & (P1 | P2), pos, speed); // shoot
-				reloading = 200; // and wait before next shot is ready
-				break;
-			}
+		if ((abs(game->m_Tank[i]->pos.x - pos.x)) < 100 && (abs(game->m_Tank[i]->pos.y - pos.y)) < 100) {
+			vec2 d = game->m_Tank[i]->pos - pos;
+			if ((length(d) < 100))
+				if ((dot(normalize(d), speed) > 0.99999f))
+				{
+					Fire(flags & (P1 | P2), pos, speed); // shoot
+					shotsFired = true;
+					reloading = 200; // and wait before next shot is ready
+					break;
+				}
 		}
 	}
 }
@@ -189,6 +168,7 @@ void Tank::Tick(int tankIndex)
 // Game::Init - Load data, setup playfield
 void Game::Init()
 {
+	//Create a quadtree that encompasses the entire screen
 	m_Heights = new Surface( "testdata/heightmap.png" ), m_Backdrop = new Surface( 1024, 768 ), m_Grid = new Surface( 1024, 768 );
 	Pixel* a1 = m_Grid->GetBuffer(), *a2 = m_Backdrop->GetBuffer(), *a3 = m_Heights->GetBuffer();
 	for ( int y = 0; y < 768; y++ ) for ( int idx = y * 1024, x = 0; x < 1024; x++, idx++ ) a1[idx] = (((x & 31) == 0) | ((y & 31) == 0)) ? 0x6600 : 0;
@@ -204,11 +184,6 @@ void Game::Init()
 	m_P2Sprite = new Sprite( new Surface( "testdata/p2tank.tga" ), 1, Sprite::FLARE );
 	m_PXSprite = new Sprite( new Surface( "testdata/deadtank.tga" ), 1, Sprite::BLACKFLARE );
 	m_Smoke = new Sprite( new Surface( "testdata/smoke.tga" ), 10, Sprite::FLARE );
-
-
-
-	int counter = 0;
-
 	// create blue tanks
 	for ( unsigned int i = 0; i < MAXP1; i++ )
 	{
@@ -216,31 +191,6 @@ void Game::Init()
 		t->pos = vec2( (float)((i % 5) * 20), (float)((i / 5) * 20 + 50) );
 		t->target = vec2( SCRWIDTH, SCRHEIGHT ); // initially move to bottom right corner
 		t->speed = vec2( 0, 0 ), t->flags = Tank::ACTIVE|Tank::P1, t->maxspeed = (i < (MAXP1 / 2))?0.65f:0.45f;
-
-		if (i % 4 == 0) {
-			tquad->posX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->posX4[counter] = _mm_set_ps((float)((i % 5) * 20), (float)(((i + 1) % 5) * 20), (float)(((i + 2) % 5) * 20), (float)(((i + 3) % 5) * 20));
-
-			tquad->posY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->posY4[counter] = _mm_set_ps((float)((i / 5) * 20 + 50), (float)(((i+1) / 5) * 20 + 50), (float)(((i + 2) / 5) * 20 + 50), (float)(((i + 3) / 5) * 20 + 50));
-
-			tquad->targetX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->targetX4[counter] = _mm_set_ps1(SCRWIDTH);
-
-			tquad->targetY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->targetY4[counter] = _mm_set_ps1(SCRHEIGHT);
-
-			tquad->speedX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->speedX4[counter] = _mm_setzero_ps();
-
-			tquad->speedY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->speedY4[counter] = _mm_setzero_ps();
-
-			counter++;
-		}
-			
-			
-
 	}
 	// create red tanks
 	for ( unsigned int i = 0; i < MAXP2; i++ )
@@ -249,29 +199,6 @@ void Game::Init()
 		t->pos = vec2( (float)((i % 12) * 20 + 900), (float)((i / 12) * 20 + 600) );
 		t->target = vec2( 424, 336 ); // move to player base
 		t->speed = vec2( 0, 0 ), t->flags = Tank::ACTIVE|Tank::P2, t->maxspeed = 0.3f;
-
-		if (i % 4 == 0) {
-			tquad->posX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->posX4[counter] = _mm_set_ps((float)((i % 12) * 20 + 900), (float)(((i+1) % 12) * 20 + 900), (float)(((i+2) % 12) * 20 + 900), (float)(((i+3) % 12) * 20 + 900));
-
-			tquad->posY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->posY4[counter] = _mm_set_ps((float)((i / 12) * 20 + 600), (float)(((i+1) / 12) * 20 + 600), (float)(((i+2) / 12) * 20 + 600), (float)(((i+3) / 12) * 20 + 600));
-
-			tquad->targetX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->targetX4[counter] = _mm_set_ps1(424);
-
-			tquad->targetY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->targetY4[counter] = _mm_set_ps1(336);
-
-			tquad->speedX4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->speedX4[counter] = _mm_setzero_ps();
-
-			tquad->speedY4[counter] = (__m128*)MALLOC64(sizeof(float) * 4);
-			*tquad->speedY4[counter] = _mm_setzero_ps();
-
-			counter++;
-		}
-
 	}
 	game = this; // for global reference
 	m_LButton = m_PrevButton = false;
@@ -302,15 +229,14 @@ void Game::DrawTanks()
 			m_Backdrop->GetBuffer()[(int)x + (int)y * SCRWIDTH] = SubBlend( m_Backdrop->GetBuffer()[(int)x + (int)y * SCRWIDTH], 0x030303 ); // tracks
 	}
 	//Fill the grid
-	for (int y = 0; y < SCRHEIGHT / GRIDSIZE; y++)
-		for (int x = 0; x < SCRWIDTH / GRIDSIZE; x++)
-			grid[y][x].clear();
+	memset(nr, 0, SCRHEIGHT / GRIDSIZE * SCRWIDTH / GRIDSIZE * 4);
 	for (int i = 0; i < (MAXP1 + MAXP2); i++)
 	{
 		int gx = CLAMP((int)(m_Tank[i]->pos.x / GRIDSIZE), 0, SCRWIDTH / GRIDSIZE - 1);
 		int gy = CLAMP((int)(m_Tank[i]->pos.y / GRIDSIZE), 0, SCRHEIGHT / GRIDSIZE - 1);
-		grid[gy][gx].push_back(i);
-		m_Tank[i]->gridcel = i32vec2(gy, gx);
+		grid[gy][gx][nr[gy][gx]++] = i;
+		m_Tank[i]->gridcel[0] = gy;
+		m_Tank[i]->gridcel[1] = gx;
 	}
 
 }
@@ -334,6 +260,18 @@ void Game::PlayerInput()
 	m_PrevButton = m_LButton;
 }
 
+void redTick()
+{
+	for (unsigned int i = (MAXP1 + MAXP2)/2; i < (MAXP1 + MAXP2); i++) game->m_Tank[i]->Tick();
+
+}
+
+void blueTick()
+{
+	for (unsigned int i = 0; i < (MAXP1 + MAXP2)/2; i++) game->m_Tank[i]->Tick();
+
+}
+
 // Game::Tick - main game loop
 void Game::Tick( float a_DT )
 {
@@ -342,7 +280,11 @@ void Game::Tick( float a_DT )
 	ScreenToClient( FindWindow( NULL, "Template" ), &p );
 	m_LButton = (GetAsyncKeyState( VK_LBUTTON ) != 0), m_MouseX = p.x, m_MouseY = p.y;
 	m_Backdrop->CopyTo( m_Surface, 0, 0 );
-	for ( unsigned int i = 0; i < (MAXP1 + MAXP2); i++ ) m_Tank[i]->Tick(i);
+	//for ( unsigned int i = 0; i < (MAXP1 + MAXP2); i++ ) m_Tank[i]->Tick();
+	std::thread bT(blueTick);
+	std::thread rT(redTick);
+	bT.join();
+	rT.join();
 	for ( unsigned int i = 0; i < MAXBULLET; i++ ) bullet[i].Tick();
 	DrawTanks();
 	PlayerInput();
