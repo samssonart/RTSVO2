@@ -4,12 +4,8 @@
 // global data (source scope)
 static Game* game;
 
-//Grid to improve collision detection
-// allocate grid
-int grid[SCRHEIGHT / GRIDSIZE][SCRWIDTH / GRIDSIZE][5000];
-// allocate array for storing grid cell ball count
-int nr[SCRHEIGHT / GRIDSIZE][SCRWIDTH / GRIDSIZE];
-
+//Spatial hashing grid to improve collision detection
+Grid gridCells[GRIDSIZE*GRIDSIZE];
 
 bool shotsFired = false;
 // mountain peaks (push player away)
@@ -122,39 +118,39 @@ void Tank::Tick()
 
 
 	// evade other tanks
-	if (shotsFired) {//If they have started attacking each other we know the armies are close
+	//for (unsigned int i = 0; i < (MAXP1 + MAXP2); i++)
+	//{
+	//if ((game->m_Tank[i] == this)) continue;
 
-		for (unsigned int i = 0; i < (MAXP1 + MAXP2); i++)
-		{
-			if ((game->m_Tank[i] == this)) continue;
+	//	float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+	//	float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
 
-			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
-			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
-
-			if (((game->m_Tank[i]->pos.x) < 0.0f || (game->m_Tank[i]->pos.x) > SCRWIDTH) || ((game->m_Tank[i]->pos.y) < 0.0f || (game->m_Tank[i]->pos.x) > SCRHEIGHT))
-				continue;//tank offscreen, we don't care about collisions 
-			if (distX < 6 && distY < 6) {
-				vec2 d = pos - game->m_Tank[i]->pos;
-				/*float l = length(d);*/
-				float l = (d.x*d.x + d.y*d.y);
-				if (l < 64)
-					force += normalize(d) * 2.0f;
-				else if (l < 256)
-					force += normalize(d) * 0.4f;
-			}
-		}
-	}
-	else//If they haven't started attacking we know the red and blue tanks are far from each other, so just check collisions within armies
+	//	if (((game->m_Tank[i]->pos.x) < 0.0f || (game->m_Tank[i]->pos.x) > SCRWIDTH) || ((game->m_Tank[i]->pos.y) < 0.0f || (game->m_Tank[i]->pos.x) > SCRHEIGHT))
+	//		continue;//tank offscreen, we don't care about collisions 
+	//	if (distX < 6 && distY < 6) {
+	//		vec2 d = pos - game->m_Tank[i]->pos;
+	//		/*float l = length(d);*/
+	//		float l = (d.x*d.x + d.y*d.y);
+	//		if (l < 64)
+	//			force += normalize(d) * 2.0f;
+	//		else if (l < 256)
+	//			force += normalize(d) * 0.4f;
+	//	}
+	//}
+	//if (shotsFired) {//If they have started attacking each other we know the armies are close
+	bool gridFound = false;
+	for (unsigned int g = 0; g < GRIDSIZE*GRIDSIZE; g++)
 	{
-		for (unsigned int i = 0; i < MAXP1; i++)
+		if (gridCells[g].uid != cellID) continue;
+		else gridFound = true;
+		for (auto &tankI : gridCells[g].tankIndices) 
 		{
-			if ((game->m_Tank[i] == this)) continue;
+			if ((game->m_Tank[tankI] == this)) continue;
+			float distX = fabs(game->m_Tank[tankI]->pos.x - pos.x);
+			float distY = fabs(game->m_Tank[tankI]->pos.y - pos.y);
 
-			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
-			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
-
-			if (distX < 6 && distY < 6 ) {
-				vec2 d = pos - game->m_Tank[i]->pos;
+			if (distX < 6 && distY < 6) {
+				vec2 d = pos - game->m_Tank[tankI]->pos;
 				/*float l = length(d);*/
 				float l = (d.x*d.x + d.y*d.y);
 				if (l < 64)
@@ -163,24 +159,46 @@ void Tank::Tick()
 					force += normalize(d) * 0.4f;
 			}
 		}
-		for (unsigned int i = MAXP1; i < MAXP2; i++)
-		{
-			if ((game->m_Tank[i] == this)) continue;
-
-			float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
-			float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
-
-			if (distX < 6 && distY < 6) {
-				vec2 d = pos - game->m_Tank[i]->pos;
-				/*float l = length(d);*/
-				float l = (d.x*d.x + d.y*d.y);
-				if (l < 64) 
-					force += normalize(d) * 2.0f;
-				else if (l < 256) 
-					force += normalize(d) * 0.4f;
-			}
-		}
+		if (gridFound) break;
 	}
+	//}
+	//else//If they haven't started attacking we know the red and blue tanks are far from each other, so just check collisions within armies
+	//{
+	//	for (unsigned int i = 0; i < MAXP1; i++)
+	//	{
+	//		if ((game->m_Tank[i] == this)) continue;
+
+	//		float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+	//		float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
+
+	//		if (distX < 6 && distY < 6 ) {
+	//			vec2 d = pos - game->m_Tank[i]->pos;
+	//			/*float l = length(d);*/
+	//			float l = (d.x*d.x + d.y*d.y);
+	//			if (l < 64)
+	//				force += normalize(d) * 2.0f;
+	//			else if (l < 256)
+	//				force += normalize(d) * 0.4f;
+	//		}
+	//	}
+	//	for (unsigned int i = MAXP1; i < MAXP2; i++)
+	//	{
+	//		if ((game->m_Tank[i] == this)) continue;
+
+	//		float distX = fabs(game->m_Tank[i]->pos.x - pos.x);
+	//		float distY = fabs(game->m_Tank[i]->pos.y - pos.y);
+
+	//		if (distX < 6 && distY < 6) {
+	//			vec2 d = pos - game->m_Tank[i]->pos;
+	//			/*float l = length(d);*/
+	//			float l = (d.x*d.x + d.y*d.y);
+	//			if (l < 64) 
+	//				force += normalize(d) * 2.0f;
+	//			else if (l < 256) 
+	//				force += normalize(d) * 0.4f;
+	//		}
+	//	}
+	//}
 	// evade user dragged line
 	if ((flags & P1) && (game->m_LButton))
 	{
@@ -252,6 +270,24 @@ void Game::Init()
 	game = this; // for global reference
 	m_LButton = m_PrevButton = false;
 	fpstimer.reset();
+
+	//initialize the space hashing grid
+	int x = 0;
+	int y = 0;
+	for (int i = 0; i < GRIDSIZE*GRIDSIZE; i++)
+	{
+		gridCells[i].x = x;
+		gridCells[i].y = y;
+		gridCells[i].w = SCRWIDTH / GRIDSIZE;
+		gridCells[i].h = SCRHEIGHT / GRIDSIZE;
+		gridCells[i].uid = rand() % 65535;
+		y += SCRHEIGHT / GRIDSIZE;
+		if(i!= 0 && i%GRIDSIZE == 0)
+		{
+			y = 0;
+			x += SCRWIDTH / GRIDSIZE;
+		}
+	}
 }
 
 // Game::DrawTanks - draw the tanks
@@ -277,17 +313,19 @@ void Game::DrawTanks()
 		if ((x >= 0) && (x < SCRWIDTH) && (y >= 0) && (y < SCRHEIGHT))
 			m_Backdrop->GetBuffer()[(int)x + (int)y * SCRWIDTH] = SubBlend( m_Backdrop->GetBuffer()[(int)x + (int)y * SCRWIDTH], 0x030303 ); // tracks
 	}
-	//Fill the grid
-	memset(nr, 0, SCRHEIGHT / GRIDSIZE * SCRWIDTH / GRIDSIZE * 4);
+	for (int g = 0; g < GRIDSIZE* GRIDSIZE; g++) gridCells[g].tankIndices.clear();
 	for (int i = 0; i < (MAXP1 + MAXP2); i++)
-	{
-		int gx = CLAMP((int)(m_Tank[i]->pos.x / GRIDSIZE), 0, SCRWIDTH / GRIDSIZE - 1);
-		int gy = CLAMP((int)(m_Tank[i]->pos.y / GRIDSIZE), 0, SCRHEIGHT / GRIDSIZE - 1);
-		grid[gy][gx][nr[gy][gx]++] = i;
-		m_Tank[i]->gridcel[0] = gy;
-		m_Tank[i]->gridcel[1] = gx;
-	}
-
+		for (int g = 0; g < GRIDSIZE* GRIDSIZE; g++)
+		{
+			if ((((int)m_Tank[i]->pos.x >= gridCells[g].x) && ((int)m_Tank[i]->pos.x <= gridCells[g].w + gridCells[g].x)) 
+				&& (((int)m_Tank[i]->pos.y >= gridCells[g].y) && ((int)m_Tank[i]->pos.y <= gridCells[g].h + gridCells[g].y)))
+			{
+				//tank in cell grid
+				m_Tank[i]->cellID = gridCells[g].uid;
+				gridCells[g].tankIndices.push_back(i);
+				break;
+			}
+		}
 }
 
 // Game::PlayerInput - handle player input
@@ -361,48 +399,3 @@ void Game::Tick( float a_DT )
 	m_Surface->Print( buffer, 200, 370, 0xffff00 );
 }
 
-void SpatialHash::Setup(int sceneWidth, int sceneHeight, int cellSize)
-{
-	int col = sceneWidth / cellSize;
-	int row = sceneHeight / cellSize;
-
-	for (int i = 0; i < col*row; i++) {
-		buckets.emplace(i, new vector<int*>());
-	}
-
-	Col = col;
-	Row = row;
-}
-
-void SpatialHash::ClearBuckets()
-{
-	buckets.clear();
-
-	for (int i = 0; i < Col*Row; i++) {
-		buckets.emplace(i, new vector<int*>());
-	}
-}
-
-void SpatialHash::RegisterTank(int tankIndex)
-{
-	vector<int*> list = GetIdForTank(tankIndex);
-
-	for (auto & item : list)
-	{
-		buckets.at(*item).push_back(tankIndex);
-	}
-}
-
-vector<int*> SpatialHash::GetIdForTank(int tankIndex)
-{
-	return vector<int*>();
-}
-
-void SpatialHash::AddToBucket(vec2 vec, vector<int>* bucketToAddTo)
-{
-}
-
-vector<int*> SpatialHash::GetNearby(int tankIndex)
-{
-	return vector<int*>();
-}

@@ -1,9 +1,7 @@
 #ifndef I_GAME_H
 #define I_GAME_H
 
-#include <map>
-#include <list>
-#include <unordered_map>
+#include <vector>
 
 namespace Tmpl8 {
 
@@ -36,22 +34,15 @@ public:
 	int flags, reloading;
 	float radius;
 	int gridcel[2];
+	int cellID;
 	Smoke smoke;
 };
 
-class SpatialHash
+struct Grid
 {
-	int Col;
-	int Row;
-public:
-	unordered_map<int, vector<int*>> buckets;
-
-	void Setup(int sceneWidth, int sceneHeight, int cellSize);
-	void ClearBuckets();
-	void RegisterTank(int tankIndex);
-	vector<int*> GetIdForTank(int tankIndex);
-	void AddToBucket(vec2 vec, vector<int> * bucketToAddTo);
-	vector<int*> GetNearby(int tankIndex);
+	int x, y, w, h;
+	int uid;
+	vector<int> tankIndices;
 };
 
 class Bullet
